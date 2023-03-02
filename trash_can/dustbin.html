@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Taipei city - rubbish bin locations</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		#map {
+			height: 100em
+		}
+	</style>
+	<!-- Include Leaflet CSS and JS -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+		integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+		crossorigin="" />
+	<!-- Font Awesome -->
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css"
+		integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+		integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+		crossorigin=""></script>
+</head>
+
+<body>
+
+	<!-- Create a div element for the map -->
+	<div id="map"></div>
+	<!-- Include the Leaflet JavaScript library -->
+	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+	<script>
+		// Create a new Leaflet map centered on Taipei City
+		var map = L.map('map').setView([25.1094, 121.5319], 18);
+
+		// Add the OpenStreetMap tile layer to the map
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			maxZoom: 19,
+			attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+		}).addTo(map);
+
+		// Get the user's current location and center the map on it
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(function (position) {
+				var userLocation = [position.coords.latitude, position.coords.longitude];
+				map.setView(userLocation, 18);
+				// Add a marker at the user's location
+				var userMarker = L.marker(userLocation).addTo(map);
+				userMarker.bindPopup("You are here");
+			}, function (error) {
+				console.log(error);
+			});
+		} else {
+			console.log("Geolocation is not supported by this browser.");
+		}
+
+		// Add markers for trash can locations
+		fetch('trash_can_locations.json')
+			.then(response => response.json())
+			.then(data => {
+				data.forEach(location => {
+					L.marker([location.latitude, location.longitude])
+						.bindPopup(location.detail)
+						.addTo(map);
+				});
+			})
+			.catch(error => {
+				console.error('Error:', error);
+			});
+
+		// Add a scale control to the map
+		L.control.scale({
+			position: 'bottomleft'
+		}).addTo(map);
+	</script>
+</body>
+
+</html>
